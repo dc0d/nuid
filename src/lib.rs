@@ -10,7 +10,7 @@ pub struct NUID {
 impl NUID {
     pub fn new() -> NUID {
         let mut result = NUID {
-            pre: vec![0; PRE_LEN as usize],
+            pre: vec![0; PRE_LEN],
             seq: fastrand::i64(1..MAX_SEQ),
             inc: MIN_INC + fastrand::i64(1..(MAX_INC - MIN_INC)),
         };
@@ -33,12 +33,12 @@ impl NUID {
         let mut i: usize = b.capacity();
         let mut l = self.seq as usize;
         loop {
-            if i <= PRE_LEN as usize {
+            if i <= PRE_LEN {
                 break;
             }
             i -= 1;
-            b[i] = DIGITS_BYTES[l % (BASE as usize)];
-            l /= BASE as usize;
+            b[i] = DIGITS[l % BASE];
+            l /= BASE;
         }
 
         String::from_utf8_lossy(&b).to_string()
@@ -51,8 +51,8 @@ impl NUID {
 
     fn randomize_prefix(&mut self) {
         for idx in 0..PRE_LEN {
-            let rnd_idx = (fastrand::u8(..) as i64) % BASE;
-            self.pre[idx as usize] = DIGITS_BYTES[rnd_idx as usize];
+            let rnd_idx = (fastrand::u8(..) as usize) % BASE;
+            self.pre[idx as usize] = DIGITS[rnd_idx as usize];
         }
     }
 }
@@ -63,15 +63,14 @@ impl std::fmt::Display for NUID {
     }
 }
 
-const DIGITS: &str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-static DIGITS_BYTES: &[u8] = DIGITS.as_bytes();
-const BASE: i64 = 62;
-const PRE_LEN: i64 = 12;
-const SEQ_LEN: i64 = 10;
+const DIGITS: &[u8; 62] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const BASE: usize = 62;
+const PRE_LEN: usize = 12;
+const SEQ_LEN: usize = 10;
 const MAX_SEQ: i64 = 839299365868340224; // base^seqLen == 62^10
 const MIN_INC: i64 = 33;
 const MAX_INC: i64 = 333;
-const TOTAL_LEN: i64 = PRE_LEN + SEQ_LEN;
+const TOTAL_LEN: usize = PRE_LEN + SEQ_LEN;
 
 #[cfg(test)]
 mod tests {
@@ -79,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_digits() {
-        assert_eq!(DIGITS.len(), BASE as usize);
+        assert_eq!(DIGITS.len(), BASE);
     }
 
     #[test]
@@ -106,7 +105,7 @@ mod tests {
     fn test_proper_prefix() {
         let mut min: u8 = 255;
         let mut max: u8 = 0;
-        for d in DIGITS_BYTES {
+        for d in DIGITS {
             if *d < min {
                 min = *d;
             }
