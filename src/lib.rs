@@ -1,5 +1,4 @@
 use fastrand;
-use std::collections::HashMap;
 
 pub struct NUID {
     pre: [u8; PRE_LEN],
@@ -75,6 +74,7 @@ const TOTAL_LEN: usize = PRE_LEN + SEQ_LEN;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     #[test]
     fn test_digits() {
