@@ -2,7 +2,7 @@ use fastrand;
 use std::collections::HashMap;
 
 pub struct NUID {
-    pre: Vec<u8>,
+    pre: [u8; PRE_LEN],
     seq: i64,
     inc: i64,
 }
@@ -10,7 +10,7 @@ pub struct NUID {
 impl NUID {
     pub fn new() -> NUID {
         let mut result = NUID {
-            pre: vec![0; PRE_LEN],
+            pre: [0; PRE_LEN],
             seq: fastrand::i64(1..MAX_SEQ),
             inc: MIN_INC + fastrand::i64(1..(MAX_INC - MIN_INC)),
         };
@@ -25,7 +25,7 @@ impl NUID {
             self.reset_sequential();
         }
 
-        let mut b: Vec<u8> = vec![0; TOTAL_LEN as usize];
+        let mut b: Vec<u8> = vec![0; TOTAL_LEN];
         for (dst, src) in b.iter_mut().zip(&self.pre[..]) {
             *dst = *src;
         }
@@ -52,7 +52,7 @@ impl NUID {
     fn randomize_prefix(&mut self) {
         for idx in 0..PRE_LEN {
             let rnd_idx = (fastrand::u8(..) as usize) % BASE;
-            self.pre[idx as usize] = DIGITS[rnd_idx as usize];
+            self.pre[idx] = DIGITS[rnd_idx];
         }
     }
 }
@@ -98,7 +98,7 @@ mod tests {
 
         let id = sut.next();
 
-        assert_eq!(id.len(), TOTAL_LEN as usize);
+        assert_eq!(id.len(), TOTAL_LEN);
     }
 
     #[test]
